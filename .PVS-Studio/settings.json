@@ -37,6 +37,6 @@
   "traceSpoonLogFileName": "spoon.log",
   "check-license": false,
   "logging": "OFF",
-  "project": "E:/2-Dev/Full Stack Angular and Java Spring Boot E-Commerce Website/01-project/01-backend/bookstore",
+  "project": "E:/2-Dev/Full Stack Angular and Java Spring Boot E-Commerce Website/01-project/bookstore V1/bookstore-backend",
   "type": "sources"
 }
