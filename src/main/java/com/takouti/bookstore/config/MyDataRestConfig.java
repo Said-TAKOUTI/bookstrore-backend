@@ -1,10 +1,10 @@
 package com.takouti.bookstore.config;
 
-import com.takouti.bookstore.entity.Product;
-import com.takouti.bookstore.entity.ProductCategory;
+import com.takouti.bookstore.entity.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.metamodel.EntityType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
@@ -17,50 +17,58 @@ import java.util.Set;
 
 @Configuration
 public class MyDataRestConfig implements RepositoryRestConfigurer {
+    @Value("${allowed.origins}")
+    private String[] theAllowedOrigins;
 
-   private final EntityManager entityManager;
+    private EntityManager entityManager;
 
-   @Autowired
-   public MyDataRestConfig(EntityManager theEntityManager) {
-       entityManager = theEntityManager;
-   }
+    @Autowired
+    public MyDataRestConfig(EntityManager theEntityManager) {
+        entityManager = theEntityManager;
+    }
+
 
     @Override
     public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
-        RepositoryRestConfigurer.super.configureRepositoryRestConfiguration(config, cors);
-        HttpMethod[] theUnsupportedActions = {HttpMethod.PUT,HttpMethod.POST,HttpMethod.DELETE};
+        HttpMethod[] theUnsupportedActions = {HttpMethod.PUT, HttpMethod.POST,
+                HttpMethod.DELETE, HttpMethod.PATCH};
 
-        //disable HTTP methods for Product : Put, Post and Delete
-        config.getExposureConfiguration()
-                .forDomainType(Product.class)
-                .withItemExposure((metdata, httpMethods) -> httpMethods.disable(theUnsupportedActions))
-                .withCollectionExposure((metdata, httpMethods) -> httpMethods.disable(theUnsupportedActions));
-
-        //disable HTTP methods for ProductCategory : Put, Post and Delete
-        config.getExposureConfiguration()
-                .forDomainType(ProductCategory.class)
-                .withItemExposure((metdata, httpMethods) -> httpMethods.disable(theUnsupportedActions))
-                .withCollectionExposure((metdata, httpMethods) -> httpMethods.disable(theUnsupportedActions));
+        // disable HTTP methods for ProductCategory: PUT, POST, DELETE and PATCH
+        disableHttpMethods(Product.class, config, theUnsupportedActions);
+        disableHttpMethods(ProductCategory.class, config, theUnsupportedActions);
+        disableHttpMethods(Country.class, config, theUnsupportedActions);
+        disableHttpMethods(Province.class, config, theUnsupportedActions);
+        disableHttpMethods(Orders.class, config, theUnsupportedActions);
 
         // call an internal helper method
-        
         exposeIds(config);
+
+        // configure cors mapping
+        cors.addMapping(config.getBasePath() + "/**").allowedOrigins(theAllowedOrigins);
+    }
+
+    private void disableHttpMethods(Class theClass, RepositoryRestConfiguration config, HttpMethod[] theUnsupportedActions) {
+        config.getExposureConfiguration()
+                .forDomainType(theClass)
+                .withItemExposure((metdata, httpMethods) -> httpMethods.disable(theUnsupportedActions))
+                .withCollectionExposure((metdata, httpMethods) -> httpMethods.disable(theUnsupportedActions));
     }
 
     private void exposeIds(RepositoryRestConfiguration config) {
-    // expose entity ids
-   //
 
-
-  //  - get a list of all entity classes from the entity manager
+        // - get a list of all entity classes from the entity manager
         Set<EntityType<?>> entities = entityManager.getMetamodel().getEntities();
-  // -creat a new array of the entity types
+
+        // - create an array of the entity types
         List<Class> entityClasses = new ArrayList<>();
-        for (EntityType<?> tempEntityType : entities) {
+
+        // - get the entity types for the entities
+        for (EntityType tempEntityType : entities) {
             entityClasses.add(tempEntityType.getJavaType());
         }
-  // expose the entity ids for the array of entity/domain types
+
+        // - expose the entity ids for the array of entity/domain types
         Class[] domainTypes = entityClasses.toArray(new Class[0]);
         config.exposeIdsFor(domainTypes);
-   }
+    }
 }
