@@ -3,7 +3,6 @@ package com.takouti.bookstore.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.query.Order;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -29,9 +28,9 @@ public class Customer {
     private String email;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
-    private Set<Orders> orders = new HashSet<>();
+    private Set<Order> orders = new HashSet<>();
 
-    public void  addOrder(Orders order){
+    public void  addOrder(Order order){
         if (orders==null){
             orders = new HashSet<>();
         }

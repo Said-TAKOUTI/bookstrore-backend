@@ -15,7 +15,7 @@ import java.util.Set;
 @Table(name = "orders")
 @Getter
 @Setter
-public class Orders {
+public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,7 +42,7 @@ public class Orders {
     @UpdateTimestamp
     private Date lastUpdated;
 
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "orders")
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "order")
     private Set<OrderItem> orderItems = new HashSet<>();
 
     @ManyToOne
@@ -64,6 +64,6 @@ public class Orders {
         }
 
         orderItems.add(orderItem);
-        orderItem.setOrders(this);
+        orderItem.setOrder(this);
     }
 }

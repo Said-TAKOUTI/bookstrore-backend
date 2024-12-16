@@ -5,7 +5,7 @@ import com.takouti.bookstore.dto.Purchase;
 import com.takouti.bookstore.dto.PurchaseResponse;
 import com.takouti.bookstore.entity.Customer;
 import com.takouti.bookstore.entity.OrderItem;
-import com.takouti.bookstore.entity.Orders;
+import com.takouti.bookstore.entity.Order;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -25,22 +25,22 @@ public class CheckoutServiceImpl implements CheckoutService {
     public PurchaseResponse placeOrder(Purchase purchase) {
 
         // retrieve the order info from dto
-        Orders orders = purchase.getOrders();
+        Order order = purchase.getOrder();
 
         // generate tracking number
         String orderTrackingNumber = generateOrderTrackingNumber();
-        if (orders == null) {
+        if (order == null) {
             throw new IllegalArgumentException("Order cannot be null");
         }
-        orders.setOrderTrackingNumber(orderTrackingNumber);
+        order.setOrderTrackingNumber(orderTrackingNumber);
 
         // populate order with orderItems
-        Set<OrderItem> orderItems = orders.getOrderItems();
-        orderItems.forEach(orderItem -> orders.addOrderItem(orderItem));
+        Set<OrderItem> orderItems = order.getOrderItems();
+        orderItems.forEach(orderItem -> order.addOrderItem(orderItem));
 
         //populate order with billingAddress and shippingAddress
-        orders.setBillingAddress(purchase.getBillingAddress());
-        orders.setShippingAddress(purchase.getShippingAddress());
+        order.setBillingAddress(purchase.getBillingAddress());
+        order.setShippingAddress(purchase.getShippingAddress());
 
         //populate customer with order
         Customer customer = purchase.getCustomer();
@@ -54,7 +54,7 @@ public class CheckoutServiceImpl implements CheckoutService {
             // we found them ... let's assign them accordingly
             customer = customerFromDB;
         }
-        customer.addOrder(orders);
+        customer.addOrder(order);
 
         //save to the database
         customerRepository.save(customer);
